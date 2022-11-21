@@ -1,0 +1,21 @@
+@use "sass:map";
+
+$dark: () !default;
+$dark: map.deep-merge($dark,
+  (
+    'application': (
+      'background': rgb(247, 248, 250)
+    ),
+    'button': (
+      'background': rgb(25, 27, 31),
+      'border': rgb(25, 27, 31),
+      'icon': rgb(255, 255, 255),
+    ),
+    'navbar': (
+      'background': rgb(255, 255, 255),
+      'item': rgb(86, 90, 105),
+      'itemActive': #000,
+      'itemActiveBackground': rgb(237, 238, 242)
+    )
+  )
+);

@@ -1,0 +1,48 @@
+/**
+ * ITCSS Scalable and Maintainable CSS Architecture
+ *
+ * 01. Settings                 Global configuration and variables. Breakpoints, colors, spacing, utilities etc.
+ * 02. Tools                    Default mixins and functions.
+ * 03. Generic                  Ground-zero styles (resets, box-sizing). No classes.
+ * 04. Elements                 Unclassified  HTML elements (type selectors). H1, Ul, A etc.
+ * 05. Objects                  Common non-cosmetic structural design patterns. Containers, rows, grids, columns etc.
+ * 06. Components               Specific cosmetic elements of UI. Buttons, forms etc.
+ * 07. Utilities                Helpers and overrides.
+ * 08. Vendor                   This is where you can place vendor’s specific CSS.
+ */
+
+/* 01. Settings
+   ========================================================================== */
+@import "settings/variables";
+@import "settings/colors";
+@import "settings/fonts";
+@import "settings/light";
+@import "settings/dark";
+
+/* 02. Tools
+   ========================================================================== */
+@import "tools/mixins";
+@import "tools/theme";
+
+/* 03. Generic
+   ========================================================================== */
+@import "generic/body";
+
+/* 04. Elements
+   ========================================================================== */
+@import "elements/global";
+
+/* 05. Objects
+   ========================================================================== */
+@import "objects/wrapper";
+
+/* 06. Components
+   ========================================================================== */
+
+/* 07. Utilities
+   ========================================================================== */
+@import "utilities/background";
+@import "utilities/flex";
+
+/* 08. Vendor
+   ========================================================================== */

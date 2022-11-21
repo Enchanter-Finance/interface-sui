@@ -1,0 +1,43 @@
+@use "sass:map";
+@use "sass:math";
+
+$infra-font-path: "../fonts/infra";
+$balance-font-path: "../fonts/balance";
+
+
+$body-font-family: "Infra", sans-serif !default;
+$font-size-root: 16px !default;
+$red-purple: #E8006F;
+$spacer: 4px !default;
+
+$grid-breakpoints: () !default;
+$grid-breakpoints: map.deep-merge(
+  $grid-breakpoints,
+  (
+    "xs": 0,
+    "sm": 768px,
+    "md": 992px,
+    "lg": 1200px,
+    "xl": 1400px,
+  )
+);
+
+$display-breakpoints: () !default;
+$display-breakpoints: map.deep-merge(
+    $display-breakpoints,
+    (
+      'print-only': 'only print',
+      'screen-only': 'only screen',
+      'xs-only': 'only screen and (max-width: #{map-get($grid-breakpoints, 'sm') - 1})',
+      'sm-only': 'only screen and (min-width: #{map-get($grid-breakpoints, 'sm')}) and (max-width: #{map-get($grid-breakpoints, 'md') - 1})',
+      'sm-and-down': 'only screen and (max-width: #{map-get($grid-breakpoints, 'md') - 1})',
+      'sm-and-up': 'only screen and (min-width: #{map-get($grid-breakpoints, 'sm')})',
+      'md-only': 'only screen and (min-width: #{map-get($grid-breakpoints, 'md')}) and (max-width: #{map-get($grid-breakpoints, 'lg') - 1})',
+      'md-and-down': 'only screen and (max-width: #{map-get($grid-breakpoints, 'lg') - 1})',
+      'md-and-up': 'only screen and (min-width: #{map-get($grid-breakpoints, 'md')})',
+      'lg-only': 'only screen and (min-width: #{map-get($grid-breakpoints, 'lg')}) and (max-width: #{map-get($grid-breakpoints, 'xl') - 1})',
+      'lg-and-down': 'only screen and (max-width: #{map-get($grid-breakpoints, 'xl') - 1})',
+      'lg-and-up': 'only screen and (min-width: #{map-get($grid-breakpoints, 'lg')})',
+      'xl-only': 'only screen and (min-width: #{map-get($grid-breakpoints, 'xl')})'
+    )
+);

@@ -1,0 +1,40 @@
+.wrapper {
+  display: flex;
+  flex-flow: column;
+  align-items: flex-start;
+  position: relative;
+  min-height: 100vh;
+  &::before {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    width: 200vw;
+    height: 200vh;    
+    transform: translate(-50vw, -100vh);
+    z-index: -1;
+    content: '';
+  }
+  &::after {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    width: 200vw;
+    height: 200vh;
+    transform: translate(-50vw, -100vh);
+    z-index: -2;
+    content: '';
+  }
+  
+}
+
+.cursor-pointer{
+  cursor: pointer;
+}
+.container-fullfiled{
+  width: 100%;
+  height: 100%;
+}

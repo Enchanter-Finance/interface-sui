@@ -1,0 +1,11 @@
+@import "../settings/light";
+@import "../settings/dark";
+
+@mixin theme($component) {
+  .theme--light .#{$component} {
+    @content($light);
+  }
+  // .theme--dark .#{$component} {
+  //   @content($dark);
+  // }
+}

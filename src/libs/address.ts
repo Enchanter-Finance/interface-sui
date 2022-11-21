@@ -1,0 +1,2 @@
+export const swap_address = "0xcef9ab8e6539103b34d26388c976683e9fb7fdeee80b9beee4fdaba65a693809";
+export const test_coin_address = "0xbceeb6f002b3a24afff9401aa77dd673bd4b9a48872527a00782dd3686add775";

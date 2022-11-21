@@ -1,0 +1,13 @@
+<template>
+  <svg style="width:24px;height:24px;" class="icon-setting" width="24" height="24" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M13.0004 16.6004C14.9887 16.6004 16.6004 14.9887 16.6004 13.0004C16.6004 11.0121 14.9887 9.40039 13.0004 9.40039C11.0121 9.40039 9.40039 11.0121 9.40039 13.0004C9.40039 14.9887 11.0121 16.6004 13.0004 16.6004Z" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M22.1469 11.0745L20.8296 7.89376L22.6 5.8L20.2 3.4L18.1176 5.17954L14.8694 3.84369L14.1224 1H11.7772L11.0189 3.88136L7.84529 5.21915L5.8 3.4L3.4 5.8L5.14404 7.94662L3.847 11.1356L1 11.8V14.2L3.88133 14.9866L5.2189 18.1596L3.4 20.2L5.8 22.6L7.94939 20.8484L11.0764 22.1348L11.8 25H14.2L14.9254 22.1358L18.1061 20.8186C18.6363 21.1976 20.2 22.6 20.2 22.6L22.6 20.2L20.8191 18.0993L22.1367 14.9176L24.9999 14.1726L25 11.8L22.1469 11.0745Z" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</template>
+
+<script>
+
+export default {
+  name: "VueIconGear"
+}
+</script>

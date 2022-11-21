@@ -1,0 +1,36 @@
+body,
+html {
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  font-family: $body-font-family;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: $font-size-root;
+  font-variant: none;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  font-feature-settings: 'kern' 1, 'ss02' 1;
+  min-height: 100%;
+  color: #fff;
+  background-color: #212429;
+}
+
+// @media (prefers-color-scheme: dark) {
+//   html {
+//     background-color: #212429;
+//     color: #fff;
+//   }
+// }
+
+// @media (prefers-color-scheme: light) {
+//   html {
+//     background-color: #f7f8fa;
+//   }
+// }

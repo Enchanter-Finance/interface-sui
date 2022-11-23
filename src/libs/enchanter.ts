@@ -1,9 +1,6 @@
 import { AptosClient, HexString, MaybeHexString } from "aptos";
 import { OpenAPIConfig } from "aptos/dist/generated";
 import { aptos_submit, toFixed } from "./aptos_wallet";
-import { martian_submit } from "./martian_wallet";
-import { fewcha_submit } from "./fewcha_wallet";
-import { cryptocom_submit } from "./crypto.com";
 import { SwapDirection, TokenInfo } from "./types/types";
 import { Token, TokenAmount, Pair, Trade, BestTradeOptions } from "./entities/entities";
 import { localStorage } from "../utils/localStorage";
@@ -82,59 +79,6 @@ export class EnchanterAptosClient extends AptosClient {
                 isOfficial:true,
                 balance: 0
             },
-
-            // celer bridged coins
-            // {
-            //     address: `${CELER_COIN_ADDRESS}::test_mint_dai_coin::TestMintCoin`,
-            //     name: "celer DAI",
-            //     chainId: 27,
-            //     decimals: 8,
-            //     symbol: 'ceDAI',
-            //     value:'',                
-            //     logo: "c_DAI.png",
-            //     balance: 0
-            // },
-            // {
-            //     address: `${CELER_COIN_ADDRESS}::test_mint_usdc_coin::TestMintCoin`,
-            //     name: "celer USDC",
-            //     chainId: 27,
-            //     decimals: 8,
-            //     symbol: 'ceUSDC',
-            //     value:'',                
-            //     logo: "c_USDC.png",
-            //     balance: 0
-            // },
-            // {
-            //     address: `${CELER_COIN_ADDRESS}::test_mint_usdt_coin::TestMintCoin`,
-            //     name: "celer USDT",
-            //     chainId: 27,
-            //     decimals: 8,
-            //     symbol: 'ceUSDT',
-            //     value:'',                
-            //     logo: "c_USDT.png",
-            //     balance: 0
-            // },
-            // {
-            //     address: `${CELER_COIN_ADDRESS}::test_mint_wbtc_coin::TestMintCoin`,
-            //     name: "celer wBTC",
-            //     chainId: 27,
-            //     decimals: 8,
-            //     symbol: 'ceWBTC',
-            //     value:'',                
-            //     logo: "c_wBTC.png",
-            //     balance: 0
-            // },
-            // {
-            //     address: `${CELER_COIN_ADDRESS}::test_mint_weth_coin::TestMintCoin`,
-            //     name: "celer wETH",
-            //     chainId: 27,
-            //     decimals: 8,
-            //     symbol: 'ceWETH',
-            //     value:'',                
-            //     logo: "c_wETH.png",
-            //     balance: 0
-            // },
-
             {
                 address:'',
                 name: '',
@@ -516,16 +460,7 @@ export class EnchanterAptosClient extends AptosClient {
         switch (wallet) {
             case "aptos": {                
                 return await aptos_submit(fun, type_arguments, args, sender);
-            }
-            case "martian": {                
-                return await martian_submit(fun, type_arguments, args, sender);
-            }
-            case "fewcha": {                
-                return await fewcha_submit(fun, type_arguments, args, sender);
-            }
-            case "Crypto.com": {                
-                return await cryptocom_submit(fun, type_arguments, args, sender);
-            }
+            }            
             default:{
 
             }

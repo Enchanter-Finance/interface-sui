@@ -50,25 +50,19 @@ export default {
       store.commit(MutationType.SetConnectModal, false)
     }
 
-    const connectWallet = async (wallet) => {
+    const connectWallet = async (wallet) => {     
       if(!wallet.isInstalled) return window.open(wallet.href, '_blank');
       const walletInstance = new EnchanterWallet()
       let response = await walletInstance.doConnect(wallet.name)
-      if(wallet.name === 'aptos' && !response.address) return 
-      if(wallet.name === 'martian' && !response.address && response.indexOf('rejected') === -1) return alert('please init martian wallet')
-      if(wallet.name === 'martian' && !response.address) return
-      if(wallet.name === 'fewcha' && response && response.status !== 200) return
-      const address = wallet.name === 'fewcha' ? response?.data?.address : response?.address
+      const address = response?.address
+      if(!address) return
       store.commit(MutationType.SetWallet, {
         address,
         wallet:wallet.name
       })
       store.dispatch(ActionTypes.GetTokenBalance)
-
-
       store.dispatch(ActionTypes.onNetworkChange)  
-      
-      closeConnectModal()      
+      closeConnectModal()
     }
     return {
       closeConnectModal,

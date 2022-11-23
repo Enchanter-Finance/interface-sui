@@ -1,6 +1,6 @@
 import { AptosClient, HexString, MaybeHexString } from "aptos";
 import { OpenAPIConfig } from "aptos/dist/generated";
-import { aptos_submit, toFixed } from "./aptos_wallet";
+import { sui_submit, toFixed } from "./sui_wallet";
 import { SwapDirection, TokenInfo } from "./types/types";
 import { Token, TokenAmount, Pair, Trade, BestTradeOptions } from "./entities/entities";
 import { localStorage } from "../utils/localStorage";
@@ -459,7 +459,7 @@ export class EnchanterAptosClient extends AptosClient {
         const wallet: string = localStorage.get("localWallet") || "aptos";
         switch (wallet) {
             case "aptos": {                
-                return await aptos_submit(fun, type_arguments, args, sender);
+                return await sui_submit(fun, type_arguments, args, sender);
             }            
             default:{
 

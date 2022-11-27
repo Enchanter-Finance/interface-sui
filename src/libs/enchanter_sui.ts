@@ -6,11 +6,13 @@ const COIN_ADDRESS = "0x6098ccc37775c29da39dc926f2c0229a55ceed4e";
 
 export class EnchanterAptosClient {
     private provider;
+    private defaultDecimals;
 
     constructor() {
         this.provider = new JsonRpcProvider(Network.DEVNET);
+        this.defaultDecimals = 9;
     }
-    
+
     private _getfixedTokenList() {
         return [
           {
@@ -28,7 +30,7 @@ export class EnchanterAptosClient {
             address: `${COIN_ADDRESS}::btc::BTC`,
             name: "BTC",
             chainId: 1,
-            decimals: 9,
+            decimals: 8,
             symbol: 'BTC',
             value:'',
             logo: "",
@@ -39,7 +41,7 @@ export class EnchanterAptosClient {
             address: `${COIN_ADDRESS}::usdc::USDC`,
             name: "USDC",
             chainId: 1,
-            decimals: 9,
+            decimals: 6,
             symbol: 'USDC',
             value:'',
             logo: "",
@@ -104,5 +106,39 @@ export class EnchanterAptosClient {
         
         console.log(coinIds);
         return await this.provider.getObjectBatch(coinIds);
+    }
+
+    private async _getDecimals(typeArg: string) {
+        const events = await this.provider.getEvents({ "MoveEvent": `0x2::coin::CurrencyCreated<${typeArg}>` }, null, null)
+        const event: any = events.data[0].event;
+        return event.moveEvent?.fields?.decimals;
+    }
+    
+    /**
+     * 
+     * @param typeArg coin的类型，比如：${COIN_ADDRESS}::btc::BTC
+     * @returns 
+     */
+    async getCoinInfo(typeArg: string) {
+        const tokenInfo = {
+            address: typeArg,
+            name: "",
+            chainId: 1,
+            decimals: 0,
+            symbol: "",
+            value: "",
+            logo: "",
+            isOfficial:false,
+            balance: 0      
+        };
+        try {
+            tokenInfo.symbol = Coin.getCoinSymbol(typeArg);
+            tokenInfo.name = tokenInfo.symbol;
+            const decimals = await this._getDecimals(typeArg);
+            tokenInfo.decimals = decimals ? decimals: 9;
+        } catch(e) {
+        }
+        
+        return tokenInfo;
     }
 }

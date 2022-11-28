@@ -44,7 +44,7 @@ import { ActionTypes } from "@/store/actions"
 import { useStore } from 'vuex'
 import { MutationType } from "@/store/mutations"
 import { toFixed, formatDecimalsNum, decimalToAmount, amountToDecimal } from '@/utils/index'
-import { APTOS_ADDRESS } from '@/libs/enchanter.ts'
+import { SUI_ADDRESS } from '@/libs/enchanter_sui.ts'
 
 export default {
   name: "AddCurrencyPanel",
@@ -136,7 +136,7 @@ export default {
       store.commit(MutationType.SetBasedPosition, props.position)
 
       let fixedBalance = 0
-      if(address === APTOS_ADDRESS){
+      if(address === SUI_ADDRESS){
         let isRtSix = decimalToAmount(balance, decimals) > 122000
         if(isRtSix){
           fixedBalance = amountToDecimal(decimalToAmount(balance, decimals) - 122000 , decimals)

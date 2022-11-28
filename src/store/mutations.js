@@ -1,6 +1,6 @@
 import { getWallets } from '../utils/aptosConstants'
 import { localStorage } from "../utils/localStorage";
-import { APTOS_ADDRESS } from '@/libs/enchanter.ts'
+import { SUI_ADDRESS } from '@/libs/enchanter_sui.ts'
 export const MutationType = {  
   SetConnectModal : "SET_CONNECT_MODAL",
   SetSwapSelectTokenModal : "SET_SWAP_SELECT_TOKEN_MODAL",
@@ -164,7 +164,7 @@ export const mutations = {
   },
   [MutationType.SetTokens](state, coins) {
     state.tokenList = coins;
-    const apt = coins.find((_) => _.address === APTOS_ADDRESS) || {};
+    const apt = coins.find((_) => _.address === SUI_ADDRESS) || {};
     state.aptBalance = apt.balance;
   },
   [MutationType.SetAddress](state, value) {
@@ -219,7 +219,7 @@ export const mutations = {
     state.basedPosition = value;
   },
   [MutationType.ResetSelectedToken](state) {
-    const top = state.tokenList.find((_) => _.address === APTOS_ADDRESS) || {};
+    const top = state.tokenList.find((_) => _.address === SUI_ADDRESS) || {};
     top.value = '';
     const bot = state.tokenList.find((_) => _.address === "") || {};
     state.selectedTokenTop = top;

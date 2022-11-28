@@ -1,10 +1,15 @@
 import { JsonRpcProvider, Network, SUI_TYPE_ARG, SuiObject, getObjectFields, SuiObjectInfo, Coin } from '@mysten/sui.js';
-
+import { localStorage } from "../utils/localStorage";
+import { sui_submit, toFixed } from "./sui_wallet";
+import { groupBy } from 'lodash'
 const PACKAGE_ADDRESS = "0xc40f171e64fce180c5bfc07ac7ef847a3c6450a9";
 const POOL_ADDRESS = "0x6033264da76004ab84de07c49988d4fb59a0f579";
 const COIN_ADDRESS = "0x6098ccc37775c29da39dc926f2c0229a55ceed4e";
 
-export class EnchanterAptosClient {
+export const CELER_COIN_ADDRESS = '';
+export const SUI_ADDRESS = SUI_TYPE_ARG
+
+export class EnchanterSuiClient {
     private provider;
     private defaultDecimals;
 
@@ -22,7 +27,7 @@ export class EnchanterAptosClient {
             decimals: 9,
             symbol: 'SUI',
             value:'',
-            logo: "",
+            logo: "sui.png",
             isOfficial: true,
             balance: 0
           },
@@ -30,10 +35,10 @@ export class EnchanterAptosClient {
             address: `${COIN_ADDRESS}::btc::BTC`,
             name: "BTC",
             chainId: 1,
-            decimals: 8,
+            decimals: 9,
             symbol: 'BTC',
             value:'',
-            logo: "",
+            logo: "btc.png",
             isOfficial: true,
             balance: 0
           },
@@ -41,13 +46,24 @@ export class EnchanterAptosClient {
             address: `${COIN_ADDRESS}::usdc::USDC`,
             name: "USDC",
             chainId: 1,
-            decimals: 6,
+            decimals: 9,
             symbol: 'USDC',
             value:'',
-            logo: "",
+            logo: "usdc.png",
             isOfficial: true,
             balance: 0
-          }
+          },
+          {
+            address:'',
+            name: '',
+            chainId: 0,
+            decimals: 0,
+            symbol: '',
+            value:'',                
+            logo: '',
+            isOfficial:true,
+            balance: 0
+        },
         ]
     }
       
@@ -61,6 +77,66 @@ export class EnchanterAptosClient {
         const coins = await this.provider.getCoinBalancesOwnedByAddress(address, typeArg);
         const balace = Coin.totalBalance(coins);
         return balace;
+    }
+
+    async getTokenList(address?: string) {
+        const addedList = localStorage.get('userAddedTokens') || []
+        let coinList = this._getfixedTokenList();
+        if (addedList.length > 0) coinList = addedList.concat(coinList);
+          
+          if(address) {
+              let coinMoveObjects:any
+              let balanceObj:any = {}
+              try {
+                coinMoveObjects = await this.provider.getCoinBalancesOwnedByAddress(address);
+              } catch (error) {
+                  return coinList
+              }
+              const coins = coinMoveObjects.map((i:any) =>({ balance:Coin.getBalance(i), coinTypeArg:Coin.getCoinTypeArg(i) }))
+              const groupsCoin = groupBy(coins, 'coinTypeArg')
+              Object.keys(groupsCoin).forEach(key =>{                
+                const total = groupsCoin[key].reduce( (partialSum, c:any) => partialSum + c.balance, BigInt(0) );
+                balanceObj[key] = total
+            })
+            coinList.forEach(item => {
+                console.log('item', item)
+                if(item.address in balanceObj){
+                    const balance = balanceObj[item.address]
+                    item.balance = toFixed(this._amountToDecimal(Number(balance), item.decimals))
+                }                
+            })
+          }
+          return coinList;
+    }
+
+    async getBalanceOfAptos(address: string) {
+        let suiBalance = await this.getExactCoinBalance(address, SUI_TYPE_ARG)        
+        return toFixed(this._amountToDecimal(Number(suiBalance), this.defaultDecimals))
+    }
+
+    async getExactCoinBalance(address:string,coinTypeArg:string) {
+        const coinMoveObjects = await this.provider.getCoinBalancesOwnedByAddress(address);
+        const balanceObjects: any = [];
+        coinMoveObjects.forEach(object => {
+            if (!Coin.isCoin(object)) {
+                return;
+            }
+            if (coinTypeArg != Coin.getCoinTypeArg(object)) {
+                return;
+            }            
+            const balance = Coin.getBalance(object)
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const coinSymbol = Coin.getCoinSymbol(coinTypeArg!);
+            
+            balanceObjects.push({                
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                balance: balance!,
+                coinSymbol: coinSymbol
+            })
+        })
+        
+        const total = balanceObjects.reduce( (partialSum:any, c:any) => partialSum + c.balance, BigInt(0) );
+        return total
     }
     
     /**
@@ -140,5 +216,13 @@ export class EnchanterAptosClient {
         }
         
         return tokenInfo;
+    }
+
+    _amountToDecimal(amount: number, decimals: number) {
+        return amount / (10 ** decimals);
+    }
+    
+    _decimalToAmount(amountWithDecimal: number, decimals: number) {
+        return amountWithDecimal * (10 ** decimals);
     }
 }

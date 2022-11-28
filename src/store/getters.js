@@ -1,4 +1,4 @@
-import { CELER_COIN_ADDRESS, APTOS_ADDRESS } from '@/libs/enchanter.ts'
+import { CELER_COIN_ADDRESS, SUI_ADDRESS } from '@/libs/enchanter_sui.ts'
 
 export const getters = {  
   isSelectedBothPostion(state){   
@@ -11,9 +11,9 @@ export const getters = {
     const topAddr = state.selectedTokenTop.address
     const botAddr = state.selectedTokenBottom.address
     if(!topAddr || !botAddr) return false
-    if(topAddr.indexOf(CELER_COIN_ADDRESS) !== -1 && botAddr !== APTOS_ADDRESS){
+    if(topAddr.indexOf(CELER_COIN_ADDRESS) !== -1 && botAddr !== SUI_ADDRESS){
       return true
-    }else if(botAddr.indexOf(CELER_COIN_ADDRESS) !== -1 && topAddr !== APTOS_ADDRESS){
+    }else if(botAddr.indexOf(CELER_COIN_ADDRESS) !== -1 && topAddr !== SUI_ADDRESS){
       return true
     }else{
       return false

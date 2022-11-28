@@ -1,7 +1,7 @@
 
 import { MutationType } from "./mutations"
-import { toFixed, sleep, formatDecimalsNum, decimalToAmount } from '@/utils/index'
-import { APTOS_ADDRESS } from '@/libs/enchanter.ts'
+import { toFixed, formatDecimalsNum, decimalToAmount } from '@/utils/index'
+import { SUI_ADDRESS } from '@/libs/enchanter_sui.ts'
 import { localStorage } from "@/utils/localStorage";
 var timer;
 export const ActionTypes = {
@@ -28,13 +28,13 @@ export const actions = {
   },
 
   async [ActionTypes.GetTokenItems]({ commit }) {
-    const list = await window.SDK.getTokenList();
+    const list = await window.suiSDK.getTokenList();
     commit(MutationType.SetTokens, list);
     commit(MutationType.ResetSelectedToken);
   },
 
   async [ActionTypes.GetTokenBalance]({ commit, state, dispatch }, payload) {
-    const list = await window.SDK.getTokenList(state.address);
+    const list = await window.suiSDK.getTokenList(state.address);
     dispatch(ActionTypes.LoopGetApt);
     commit(MutationType.SetBalanceLoaded, true);
     commit(MutationType.SetTokens, list);
@@ -56,13 +56,13 @@ export const actions = {
     if (timer) clearTimeout(timer);
     timer = null;    
     timer = setTimeout(async () => {
-      const aptBalance = await window.SDK.getBalanceOfAptos(state.address);
+      const aptBalance = await window.suiSDK.getBalanceOfAptos(state.address);
       commit(MutationType.SetAptBalance, aptBalance);      
       const arr = [...state.tokenList];
-      const idx = arr.findIndex((_) => _.address === APTOS_ADDRESS);
+      const idx = arr.findIndex((_) => _.address === SUI_ADDRESS);
 
       if (idx !== -1) {
-        const item = arr.find((_) => _.address === APTOS_ADDRESS);
+        const item = arr.find((_) => _.address === SUI_ADDRESS);
         arr[idx] = { ...item, balance: aptBalance };
       }
 
@@ -70,9 +70,9 @@ export const actions = {
       const topAddress = state.selectedTokenTop.address;
       const botAddress = state.selectedTokenBottom.address;
 
-      if (topAddress === APTOS_ADDRESS) {
+      if (topAddress === SUI_ADDRESS) {
         commit(MutationType.SetSelectTokenTopBalance, aptBalance);
-      } else if (botAddress === APTOS_ADDRESS) {
+      } else if (botAddress === SUI_ADDRESS) {
         commit(MutationType.SetSelectTokenBottomBalance, aptBalance);
       }
       dispatch(ActionTypes.LoopGetApt);

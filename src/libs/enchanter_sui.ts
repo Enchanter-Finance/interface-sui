@@ -1,7 +1,7 @@
 import { JsonRpcProvider, Network, SUI_TYPE_ARG, SuiObject, getObjectFields, SuiObjectInfo, Coin } from '@mysten/sui.js';
 import { localStorage } from "../utils/localStorage";
 import { sui_submit, toFixed } from "./sui_wallet";
-import { groupBy } from 'lodash'
+import { groupBy, map } from 'lodash'
 const PACKAGE_ADDRESS = "0xc40f171e64fce180c5bfc07ac7ef847a3c6450a9";
 const POOL_ADDRESS = "0x6033264da76004ab84de07c49988d4fb59a0f579";
 const COIN_ADDRESS = "0x6098ccc37775c29da39dc926f2c0229a55ceed4e";
@@ -66,19 +66,8 @@ export class EnchanterSuiClient {
         },
         ]
     }
-      
-    /**
-     * 获取address在typeArg上的余额
-     * @param address 用户地址
-     * @param typeArg coin的类型，比如：0x2::sui::SUI, ${COIN_ADDRESS}::btc::BTC
-     * @returns 
-     */
-    async getCoinBalance(address: string, typeArg: string) {
-        const coins = await this.provider.getCoinBalancesOwnedByAddress(address, typeArg);
-        const balace = Coin.totalBalance(coins);
-        return balace;
-    }
 
+    // 给展示的token列表注入余额
     async getTokenList(address?: string) {
         const addedList = localStorage.get('userAddedTokens') || []
         let coinList = this._getfixedTokenList();
@@ -99,7 +88,6 @@ export class EnchanterSuiClient {
                 balanceObj[key] = total
             })
             coinList.forEach(item => {
-                console.log('item', item)
                 if(item.address in balanceObj){
                     const balance = balanceObj[item.address]
                     item.balance = toFixed(this._amountToDecimal(Number(balance), item.decimals))
@@ -109,11 +97,13 @@ export class EnchanterSuiClient {
           return coinList;
     }
 
-    async getBalanceOfAptos(address: string) {
+    // 拿到sui的余额
+    async getBalanceOfSui(address: string) {
         let suiBalance = await this.getExactCoinBalance(address, SUI_TYPE_ARG)        
         return toFixed(this._amountToDecimal(Number(suiBalance), this.defaultDecimals))
     }
 
+    // 拿到指定的币的余额
     async getExactCoinBalance(address:string,coinTypeArg:string) {
         const coinMoveObjects = await this.provider.getCoinBalancesOwnedByAddress(address);
         const balanceObjects: any = [];
@@ -138,23 +128,24 @@ export class EnchanterSuiClient {
         const total = balanceObjects.reduce( (partialSum:any, c:any) => partialSum + c.balance, BigInt(0) );
         return total
     }
+
     
     /**
      * 获取所有的流动性池
      */
     async getAllPools() {
         const pools = await this.provider.getObjectsOwnedByObject(POOL_ADDRESS);
-        const allPools = [];
-        for(const pool of pools) {
-            const poolInfoObjectId = pool.objectId;
-            const poolInfoObj: any = await this.provider.getObject(poolInfoObjectId);
-            const poolObjectId = poolInfoObj.details.data.fields.value;
-            const poolObj: any = await this.provider.getObject(poolObjectId);
-            allPools.push(poolObj.details.data.fields);
-        }
-        return allPools;
+        const objectIds1 = map(pools, 'objectId');
+        const list1 = await this.provider.getObjectBatch(objectIds1)        
+        const objectIds2 = list1.reduce( (prev:any, c:any) => [...prev, c.details.data.fields.value], []);        
+        const list2 = await this.provider.getObjectBatch(objectIds2)
+        let arr = list2.map((item:any) => {
+            const startStr = `${PACKAGE_ADDRESS}::pool::Pool<`
+            return item.details.data.type.slice(startStr.length).slice(0, -1).split(', ')
+        })
+        return arr
     }
-    
+
     /**
      * 获取address在typeArg上的objects，这些objects的金额加起来大于等于amount
      * @param amount 目标金额

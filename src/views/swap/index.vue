@@ -14,11 +14,8 @@ import { localStorage } from "@/utils/localStorage";
 const store = useStore()
 
 const getAllPools = async()=>{
-  // const list = [
-  //   ["0x1::aptos_coin::AptosCoin", "0x7cace89b65b4ed3dce32660b5374055ce45075a192cf113d0fd4ea8e91ed423::usdt::USDT"],
-  //   ["0x1::aptos_coin::AptosCoin", "0x7cace89b65b4ed3dce32660b5374055ce45075a192cf113d0fd4ea8e91ed423::xbtc::XBTC"]
-  // ];
-  const list = await window.SDK.getAllPools()  
+  
+  const list = await window.suiSDK.getAllPools()  
   localStorage.set('allPools', list || [])
 
 }

@@ -124,7 +124,7 @@ const getCoinInfo = (address)=>{
 
 const getPairCoins = async() => {
    for (let i = 0; i < list.length; i++) {
-    const { pairsInfo, share, decimals } = list[i]     
+    const { pairsInfo, share, decimals } = list[i]
     const reserveData = await window.SDK.getReserveData(pairsInfo[0].address, pairsInfo[1].address);    
     
     const x = toFixed(amountToDecimal(share * reserveData.x, decimals))

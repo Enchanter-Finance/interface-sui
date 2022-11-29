@@ -56,7 +56,7 @@ export const actions = {
     if (timer) clearTimeout(timer);
     timer = null;    
     timer = setTimeout(async () => {
-      const aptBalance = await window.suiSDK.getBalanceOfAptos(state.address);
+      const aptBalance = await window.suiSDK.getBalanceOfSui(state.address);
       commit(MutationType.SetAptBalance, aptBalance);      
       const arr = [...state.tokenList];
       const idx = arr.findIndex((_) => _.address === SUI_ADDRESS);

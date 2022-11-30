@@ -77,7 +77,7 @@ export default function (type) {
   }
 
   const debounceMethod = debounce((coinAddress) => {
-    window.SDK.getCoinInfo(coinAddress, address.value).then((res) => {
+    window.suiSDK.getCoinInfo(coinAddress, address.value).then((res) => {
       if(!res) return resetList()
       showList.value = [res];
       isLoading.value = false;

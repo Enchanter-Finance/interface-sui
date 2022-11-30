@@ -134,6 +134,7 @@ export class EnchanterSuiClient {
      * 获取所有的流动性池
      */
     async getAllPools() {
+        
         const pools = await this.provider.getObjectsOwnedByObject(POOL_ADDRESS);
         const objectIds1 = map(pools, 'objectId');
         const list1 = await this.provider.getObjectBatch(objectIds1)        
@@ -186,7 +187,7 @@ export class EnchanterSuiClient {
      * @param typeArg coin的类型，比如：${COIN_ADDRESS}::btc::BTC
      * @returns 
      */
-    async getCoinInfo(typeArg: string) {
+    async getCoinInfo(typeArg: string, userAddress:string) {
         const tokenInfo = {
             address: typeArg,
             name: "",
@@ -202,7 +203,11 @@ export class EnchanterSuiClient {
             tokenInfo.symbol = Coin.getCoinSymbol(typeArg);
             tokenInfo.name = tokenInfo.symbol;
             const decimals = await this._getDecimals(typeArg);
-            tokenInfo.decimals = decimals ? decimals: 9;
+            if(userAddress){
+                let coinBalance = await this.getExactCoinBalance(userAddress, '')
+                tokenInfo.balance = toFixed(this._amountToDecimal(Number(coinBalance), decimals))
+            }            
+            tokenInfo.decimals = decimals ? decimals: this.defaultDecimals;
         } catch(e) {
         }
         

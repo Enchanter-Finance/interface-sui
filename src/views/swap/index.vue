@@ -13,11 +13,10 @@ import { MutationType } from "@/store/mutations"
 import { localStorage } from "@/utils/localStorage";
 const store = useStore()
 
-const getAllPools = async()=>{
-  
-  const list = await window.suiSDK.getAllPools()  
-  localStorage.set('allPools', list || [])
-
+const getAllPools = async()=>{  
+  const list = await window.suiSDK.getAllPools()    
+  localStorage.set('allPools', list.coinsArr || [])
+  localStorage.set('coinsIds', list.coinsIds || [])
 }
 getAllPools()
 

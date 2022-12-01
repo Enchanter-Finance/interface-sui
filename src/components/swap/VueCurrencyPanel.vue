@@ -109,7 +109,7 @@ export default {
     };
     const handleInput = (e) => {
       const num = getFomatNumber(e.target.value);
-
+  
       if (isNotExistsPair.value) return;
       commonSet(num);
     };
@@ -145,7 +145,7 @@ export default {
       });
     };
 
-    const getPrice = (params)=>{
+    const getPrice = (params)=>{    
       store.dispatch(ActionTypes.GetAnotherSwapPosition, params);
     }
 

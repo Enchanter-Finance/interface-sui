@@ -62,8 +62,8 @@ const getCoinInfo = (address)=>{
 }
 
 const getAllPools = async()=>{
-  const list = await window.SDK.getAllPools()  
-  localStorage.set('allPools', list || [])
+  const list = await window.SDK.getAllPools()
+  localStorage.set('allPools', list.coinsArr || [])
 }
 
 getAllPools()

@@ -79,6 +79,8 @@ export const actions = {
     }, 4000);
   },
 
+
+  // todo list
   async [ActionTypes.GetAnotherSwapPosition]({ commit, state, getters }, payload) {
     commit(MutationType.setLpNotExist, false)
     if(getters.isNotExistsPair){
@@ -105,7 +107,7 @@ export const actions = {
     const { decimals, value } = inToken
     const inAmount = decimalToAmount(value, decimals)
 
-    let quote = await window.SDK.quote(exactDir, topAddress, botAddress, inAmount, [topDecimals, botDecimals])
+    let quote = await window.suiSDK.quote(exactDir, topAddress, botAddress, inAmount, [topDecimals, botDecimals])
     if(!quote){
       commit(MutationType.setLpNotExist, true)
       commit(MutationType.ResetSlideStatus);

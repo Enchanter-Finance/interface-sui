@@ -89,7 +89,7 @@ export default {
     let lpAmount = computed(() => {
       // if is create lp =  sqrt(x*y)
       if(currentLpData.value === null){
-        return Math.sqrt(selectedTokenTop.value.value * selectedTokenBottom.value.value).toFixed(8)
+        return Math.sqrt(selectedTokenTop.value.value, selectedTokenBottom.value.value).toFixed(8)
       }else{
         const lpTotal = currentLpData.value.lpAmount
 

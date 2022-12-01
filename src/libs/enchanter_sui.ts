@@ -1,12 +1,13 @@
 import { JsonRpcProvider, Network, SUI_TYPE_ARG, SuiObject, getObjectFields, SuiObjectInfo, Coin } from '@mysten/sui.js';
 import { localStorage } from "../utils/localStorage";
 import { sui_submit, toFixed } from "./sui_wallet";
+import { SwapDirection, TokenInfo } from "./types/types";
 import { groupBy, map } from 'lodash'
 const PACKAGE_ADDRESS = "0xc40f171e64fce180c5bfc07ac7ef847a3c6450a9";
 const POOL_ADDRESS = "0x6033264da76004ab84de07c49988d4fb59a0f579";
 const COIN_ADDRESS = "0x6098ccc37775c29da39dc926f2c0229a55ceed4e";
 
-export const CELER_COIN_ADDRESS = '';
+export const CELER_COIN_ADDRESS = '123';
 export const SUI_ADDRESS = SUI_TYPE_ARG
 
 export class EnchanterSuiClient {
@@ -134,18 +135,74 @@ export class EnchanterSuiClient {
      * 获取所有的流动性池
      */
     async getAllPools() {
-        
         const pools = await this.provider.getObjectsOwnedByObject(POOL_ADDRESS);
         const objectIds1 = map(pools, 'objectId');
-        const list1 = await this.provider.getObjectBatch(objectIds1)        
-        const objectIds2 = list1.reduce( (prev:any, c:any) => [...prev, c.details.data.fields.value], []);        
+        const list1 = await this.provider.getObjectBatch(objectIds1)
+        const objectIds2 = list1.reduce( (prev:any, c:any) => [...prev, c.details.data.fields.value], []);
         const list2 = await this.provider.getObjectBatch(objectIds2)
-        let arr = list2.map((item:any) => {
+        let coinsArr = list2.map((item:any) => {
             const startStr = `${PACKAGE_ADDRESS}::pool::Pool<`
             return item.details.data.type.slice(startStr.length).slice(0, -1).split(', ')
         })
-        return arr
+        let coinsIds = list2.map((item:any) => {
+            const startStr = `${PACKAGE_ADDRESS}::pool::Pool<`
+            return [item.details.data.type.slice(startStr.length).slice(0, -1).split(', '), item.details.reference.objectId]
+        })
+        return {
+            coinsArr,
+            coinsIds
+        }
     }
+
+
+    // 获取交易信息
+    async quote(type: SwapDirection, coinTypeTagX: string, coinTypeTagY: string, amount: number, decimalsArr:Array<number>) {
+        const allPools = localStorage.get('allPools')
+        const coinsIds = localStorage.get('coinsIds')
+        let [topDecimals, botDecimals] = decimalsArr
+        let quote = 0;
+        let res:any;    
+
+        const lp = this._getLpDirection(allPools, coinTypeTagX, coinTypeTagY)
+        const objectId:any = this._getObjectId(coinsIds, coinTypeTagX, coinTypeTagY)
+        try {
+            res = await this.provider.getObject(objectId)
+        } catch (error) {
+            return null
+        }
+        const fields = res.details.data.fields
+        let reserveX = parseInt(fields.reserve_x);
+        let reserveY = parseInt(fields.reserve_y);
+        console.log('fields', fields)
+        
+        if(lp === 'yx'){
+            [reserveX, reserveY] = [reserveY, reserveX];
+        }
+        if(type == "exactIn") {
+            amount = amount * (1-0.0030)
+            quote = Math.floor(amount * reserveY / (amount + reserveX));            
+        } else {
+            let nonFee = (amount * reserveX) / (reserveY - amount)
+            quote = Math.floor(nonFee / (1-0.0030)) + 1;
+        }
+        let amountDecimals = this._amountToDecimal(amount, type == "exactIn" ? topDecimals : botDecimals);
+        let quoteDecimals = this._amountToDecimal(quote, type == "exactIn" ? botDecimals : topDecimals);
+
+        let rate = reserveX / reserveY
+
+        return {            
+            amount,
+            amountDecimals,
+            quote,
+            quoteDecimals,
+            reserveX,
+            reserveY,
+            rate,
+            lp
+        }
+    }
+
+
 
     /**
      * 获取address在typeArg上的objects，这些objects的金额加起来大于等于amount
@@ -220,5 +277,22 @@ export class EnchanterSuiClient {
     
     _decimalToAmount(amountWithDecimal: number, decimals: number) {
         return amountWithDecimal * (10 ** decimals);
+    }
+
+    _getLpDirection(allPools:Array<Array<string>>, coinX:string, coinY:string): string|undefined{
+        const exactPair = allPools.find(lp => lp.indexOf(coinX) !== -1 && lp.indexOf(coinY) !== -1)
+        let lp;
+        if(exactPair){
+            if(exactPair[0] === coinX){
+                lp = 'xy';         
+            }else{
+                lp = 'yx';          
+            }
+        }
+        return lp
+    }
+    _getObjectId(coinsIds:Array<any>, coinX:string, coinY:string): string|undefined{        
+        const exactPair = coinsIds.find(lp => lp[0].indexOf(coinX) !== -1 && lp[0].indexOf(coinY) !== -1)        
+        return exactPair[1]
     }
 }

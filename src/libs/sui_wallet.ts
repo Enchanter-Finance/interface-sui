@@ -11,15 +11,16 @@ export async function signTransaction(transaction: any) {
 
 
 
-export async function sui_submit(fun: string, type_arguments: any[], args: any[], sender:string) {
+export async function sui_submit(fun: string, type_arguments: any[], args: any[], packageId:string) {
     const payload = {        
-        packageObjectId: '0x2',
-        module: 'devnet_nft',
+        packageObjectId: packageId,
+        module: 'swap',
         function: fun,
         typeArguments: type_arguments,
         arguments: args,
         gasBudget: 10000,
     };
+    console.log('payload', payload)
     return (window as any).suiWallet.executeMoveCall(payload);
 }
 

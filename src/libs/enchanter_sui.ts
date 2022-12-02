@@ -7,7 +7,7 @@ const PACKAGE_ADDRESS = "0xc40f171e64fce180c5bfc07ac7ef847a3c6450a9";
 const POOL_ADDRESS = "0x6033264da76004ab84de07c49988d4fb59a0f579";
 const COIN_ADDRESS = "0x6098ccc37775c29da39dc926f2c0229a55ceed4e";
 
-export const CELER_COIN_ADDRESS = '123';
+export const CELER_COIN_ADDRESS = 'CELER_COIN_ADDRESS';
 export const SUI_ADDRESS = SUI_TYPE_ARG
 
 export class EnchanterSuiClient {
@@ -161,7 +161,7 @@ export class EnchanterSuiClient {
         const coinsIds = localStorage.get('coinsIds')
         let [topDecimals, botDecimals] = decimalsArr
         let quote = 0;
-        let res:any;    
+        let res:any;
 
         const lp = this._getLpDirection(allPools, coinTypeTagX, coinTypeTagY)
         const objectId:any = this._getObjectId(coinsIds, coinTypeTagX, coinTypeTagY)
@@ -173,7 +173,6 @@ export class EnchanterSuiClient {
         const fields = res.details.data.fields
         let reserveX = parseInt(fields.reserve_x);
         let reserveY = parseInt(fields.reserve_y);
-        console.log('fields', fields)
         
         if(lp === 'yx'){
             [reserveX, reserveY] = [reserveY, reserveX];
@@ -214,6 +213,62 @@ export class EnchanterSuiClient {
         return coins.map(coin => Coin.getID(coin));
     }
     
+     async _submit(fun: string, type_arguments: any[], args: any[]) {
+        const wallet: string = localStorage.get("localWallet") || "suiWallet";
+        switch (wallet) {
+            case "suiWallet": {
+                return await sui_submit(fun, type_arguments, args, PACKAGE_ADDRESS);
+            }            
+            default:{
+
+            }
+        }
+    }
+
+
+    async getReserveData(coinTypeTagX:string, coinTypeTagY:string) {
+        
+        let allPools = localStorage.get('allPools') || []
+        let coinsIds = localStorage.get('coinsIds') || []
+        if(!allPools.length || !coinsIds.length){
+            const data = await this.getAllPools()  
+            localStorage.set('allPools', data.coinsArr || [])
+            localStorage.set('coinsIds', data.coinsIds || [])
+            allPools = data.coinsArr
+            coinsIds = data.coinsIds            
+        } 
+
+        let res:any;
+        const lp = this._getLpDirection(allPools, coinTypeTagX, coinTypeTagY)
+        const objectId:any = this._getObjectId(coinsIds, coinTypeTagX, coinTypeTagY)
+
+        try {
+            res = await this.provider.getObject(objectId)
+        } catch (error) {
+            return null
+        }
+
+        const fields = res.details.data.fields
+        
+        let reserveX = parseInt(fields.reserve_x);
+        let reserveY = parseInt(fields.reserve_y);
+
+        let rate = reserveX / reserveY
+        
+
+        if(lp === 'yx'){
+            [reserveX, reserveY] = [reserveY, reserveX]
+            rate = 1 / rate
+        }
+        return {
+            rate,
+            x: reserveX,
+            y: reserveY,
+            lp
+        }
+    }
+
+    
     /**
      * 获取address的LP Token
      * @param address 用户地址
@@ -233,11 +288,121 @@ export class EnchanterSuiClient {
         return await this.provider.getObjectBatch(coinIds);
     }
 
+    async exchange(in_coin: string, out_coin: string, in_amount: number, out_amount: number, impact_rate: number, sender:string, type?:string) {        
+        const allPools = localStorage.get('allPools')
+        const coinsIds = localStorage.get('coinsIds')
+
+        in_amount = Math.floor(in_amount)
+        out_amount = Math.floor(out_amount)
+        
+        const lp = this._getLpDirection(allPools, in_coin, out_coin)
+        const poolId:any = this._getObjectId(coinsIds, in_coin, out_coin)
+
+        let coin_numbers:any = await this.getBalnaceGreaterThan(sender, BigInt(in_amount), in_coin)
+
+        let min_out;
+        let max_in;
+        if(type === 'exactIn'){
+            min_out = this._calculateMinimum(out_amount, impact_rate, type);
+            const strArgs = [poolId, coin_numbers, in_amount, min_out]
+            return await this._submit('swap_x_to_y', [in_coin, out_coin], strArgs);
+        }else{
+            max_in = this._calculateMinimum(in_amount, impact_rate, type);
+            const strArgs = [poolId, coin_numbers, out_amount, max_in]
+            return await this._submit('swap_x_to_y', [in_coin, out_coin], strArgs);
+        }
+     }
+     
+    async addLiquidity(coin_x: string, amount_x: number, coin_y: string, amount_y: number, impact_rate: number, sender:string, type?:string) {
+        const coinsIds = localStorage.get('coinsIds')
+        const poolId:any = this._getObjectId(coinsIds, coin_x, coin_y)
+        const min_x = this._calculateMinimum(amount_x, impact_rate);
+        const min_y = this._calculateMinimum(amount_y, impact_rate);
+        let coin_numbers_x:any = await this.getBalnaceGreaterThan(sender, BigInt(amount_x), coin_x)
+        let coin_numbers_y:any = await this.getBalnaceGreaterThan(sender, BigInt(amount_y), coin_y)
+        const strArgs = [poolId, coin_numbers_x, coin_numbers_y, amount_x, min_x, amount_y, min_y]
+        const typeMethod = type === 'create' ? 'swap::create_pool_and_add_liquidity' : 'add_liquidity';
+        return await this._submit(typeMethod, [coin_x, coin_y], strArgs);
+    }
+
+    // async removeLiquidity(coin_x: string, coin_y: string, equity_amount: number, amount_x: number, amount_y: number, impact_rate: number, sender:string) {
+    //     const min_x = this._calculateMinimum(amount_x, impact_rate);
+    //     const min_y = this._calculateMinimum(amount_y, impact_rate);
+    //     return await this._submit(`${PACKAGE_ADDRESS}::swap::remove_liquidity`, [coin_x, coin_y], [equity_amount, min_x, min_y]);
+    // }
+
+
     private async _getDecimals(typeArg: string) {
         const events = await this.provider.getEvents({ "MoveEvent": `0x2::coin::CurrencyCreated<${typeArg}>` }, null, null)
         const event: any = events.data[0].event;
         return event.moveEvent?.fields?.decimals;
     }
+
+    async getTotalLpAmount(coinX: string, coinY: string) {        
+        const allPools = localStorage.get('allPools')
+        const coinsIds = localStorage.get('coinsIds')
+        const lp = this._getLpDirection(allPools, coinX, coinY)
+        const objectId:any = this._getObjectId(coinsIds, coinX, coinY)
+
+        let LpData:any;
+
+        try {
+            LpData = await this.provider.getObject(objectId)
+        } catch (error) {
+            return null
+        }
+        return{
+            // decimals:LpData.data.decimals,
+            // lpAmount:LpData.data.supply.vec[0].integer.vec[0].value
+        }
+    }
+
+
+    // async getCurrentLPAmount(account: HexString, coinTypeTagIn: string, coinTypeTagOut: string) {        
+    //     const equity = `${POOL_ADDRESS}::lp_coin::LPCoin<${coinTypeTagIn}, ${coinTypeTagOut}>`;
+    //     const coinInfoType = `0x1::coin::CoinInfo<${equity}>`;
+    //     let supply: number;
+    //     let decimals: number = -1;
+    //     try {
+    //         const infoRes: any = await this.getAccountResource(POOL_ADDRESS, coinInfoType);
+    //         supply = parseInt(infoRes.data.supply.vec[0].integer.vec[0].value);
+    //         decimals = parseInt(infoRes.data.decimals);
+    //     } catch(e) {
+    //         return {
+    //             account,
+    //             lpValue: 0.0,
+    //             lpAmount: 0,
+    //             supply: 0,
+    //             decimals,
+    //             share:0
+    //         };
+    //     }
+
+
+    
+        
+    
+    //     // get user LP amount
+    //     const equityType = `0x1::coin::CoinStore<${equity}>`;
+    //     let lpAmount: number;
+    //     try {
+    //         const equityRes: any = await this.getAccountResource(account, equityType);
+    //         lpAmount = parseInt(equityRes.data.coin.value);
+    //     } catch(e) {
+    //         lpAmount = 0;
+    //     }
+    
+    //     return {
+    //         account,
+    //         lpValue: lpAmount / (10 ** decimals),
+    //         lpAmount,
+    //         supply,
+    //         decimals,
+    //         share: lpAmount / supply
+    //     };
+    // }
+
+
     
     /**
      * 
@@ -277,6 +442,16 @@ export class EnchanterSuiClient {
     
     _decimalToAmount(amountWithDecimal: number, decimals: number) {
         return amountWithDecimal * (10 ** decimals);
+    }
+
+    _calculateMinimum(num:number,impact_rate:number, type?:string): number{
+        if(type === 'exactIn'){
+           return Math.floor(num * (1 - (impact_rate / 100000)))
+        }else if(type === 'exactOut'){
+           return Math.ceil(num * (1 + (impact_rate/ 100000)))
+        }else{
+            return Math.floor(num * (1 - (impact_rate/ 100000)))
+        }
     }
 
     _getLpDirection(allPools:Array<Array<string>>, coinX:string, coinY:string): string|undefined{

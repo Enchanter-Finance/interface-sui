@@ -153,7 +153,7 @@ export const actions = {
       const{ address:topAddress, value:topValue, decimals:topDecimals } = state.selectedTokenTop
       const{ address:botAddress, value:botValue, decimals:botDecimals } = state.selectedTokenBottom
       const exactDir = state.basedPosition === 'top' ? 'exactIn' : 'exactOut'
-      trn = await window.SDK.exchange(
+      trn = await window.suiSDK.exchange(
         topAddress, 
         botAddress,         
         decimalToAmount(topValue, topDecimals),
@@ -161,6 +161,7 @@ export const actions = {
         state.slipage * 1000 || 1000, state.address, 
         exactDir
       )
+      console.log('trn', trn)
       if(!trn.hash) return errorCb()
       commit(MutationType.SetExchangeConfirmModal, false)
       commit(MutationType.SetShowSwapResult, {

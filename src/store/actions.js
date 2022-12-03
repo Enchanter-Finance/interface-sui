@@ -270,7 +270,7 @@ export const actions = {
     commit(MutationType.SetAddConfirmModal, true);
     commit(MutationType.SetShowPromtAddModal, false);
     try {
-      trn = await window.SDK.addLiquidity(
+      trn = await window.suiSDK.addLiquidity(
         coinXAdd,
         coinXAmount,
         coinYAdd,
@@ -314,7 +314,7 @@ export const actions = {
     const coin_in = state.selectedTokenTop.address;
     const coin_out = state.selectedTokenBottom.address;
     let lpData;
-      let data = await window.SDK.getReserveData(coin_in, coin_out);
+      let data = await window.suiSDK.getReserveData(coin_in, coin_out);
       if(data){
         lpData = {
           coinXAddress: coin_in,
@@ -333,7 +333,7 @@ export const actions = {
     if (payload) {
       dispatch(ActionTypes.GetAnotherLpPosition);
     }
-    const lpToken = await window.SDK.getTotalLpAmount(coin_in, coin_out);
+    const lpToken = await window.suiSDK.getTotalLpAmount(coin_in, coin_out);
 
     commit(MutationType.SetCurrentLpData, { ...lpData, ...lpToken });
   },

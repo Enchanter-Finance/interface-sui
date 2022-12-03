@@ -125,7 +125,7 @@ const getCoinInfo = (address)=>{
 const getPairCoins = async() => {
    for (let i = 0; i < list.length; i++) {
     const { pairsInfo, share, decimals } = list[i]
-    const reserveData = await window.SDK.getReserveData(pairsInfo[0].address, pairsInfo[1].address);    
+    const reserveData = await window.suiSDK.getReserveData(pairsInfo[0].address, pairsInfo[1].address);
     
     const x = toFixed(amountToDecimal(share * reserveData.x, decimals))
     const y = toFixed(amountToDecimal(share * reserveData.y, decimals))
@@ -138,7 +138,7 @@ const getPairCoins = async() => {
   }
 }
 const getPoolList = async() => {
-  let myPool = await window.SDK.getUserLPList(address.value)  
+  let myPool = await window.suiSDK.getUserLPList(address.value)
   const pools = myPool.map(({
     pairs,
     lpAmount,

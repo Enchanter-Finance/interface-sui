@@ -61,10 +61,13 @@ const getCoinInfo = (address)=>{
   return tokenList.value.find(_ => _.address === address)
 }
 
-const getAllPools = async()=>{
-  const list = await window.SDK.getAllPools()
+
+const getAllPools = async()=>{  
+  const list = await window.suiSDK.getAllPools()    
   localStorage.set('allPools', list.coinsArr || [])
+  localStorage.set('coinsIds', list.coinsIds || [])
 }
+
 
 getAllPools()
 

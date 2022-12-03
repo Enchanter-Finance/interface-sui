@@ -186,8 +186,6 @@ export default {
       if (store.state.isAuthWallet) {
         store.dispatch(ActionTypes.GetTokenBalance);
         store.dispatch(ActionTypes.onNetworkChange);
-        // window.suiSDK.getTokenList(store.state.address)
-        // window.SDK.getTokenList(store.state.address)
       }
     });
 

@@ -3,9 +3,9 @@ import { localStorage } from "../utils/localStorage";
 import { sui_submit, toFixed } from "./sui_wallet";
 import { SwapDirection, TokenInfo } from "./types/types";
 import { groupBy, map } from 'lodash'
-const PACKAGE_ADDRESS = "0xc40f171e64fce180c5bfc07ac7ef847a3c6450a9";
-const POOL_ADDRESS = "0x6033264da76004ab84de07c49988d4fb59a0f579";
-const COIN_ADDRESS = "0x6098ccc37775c29da39dc926f2c0229a55ceed4e";
+const PACKAGE_ADDRESS = "0x1318d6fb6fb904f4707e97d41428cf00fbfefe0d";
+const POOL_ADDRESS = "0xd9cb31218db2e0ffeccfd57fae1733f55082148f";
+const COIN_ADDRESS = "0xb123efd724d209eadb24fe1c11b96433be87b944";
 
 export const CELER_COIN_ADDRESS = 'CELER_COIN_ADDRESS';
 export const SUI_ADDRESS = SUI_TYPE_ARG
@@ -268,14 +268,13 @@ export class EnchanterSuiClient {
         }
     }
 
-    
     /**
      * 获取address的LP Token
      * @param address 用户地址
      * @returns 
      */
     async getUserLPList(address: string) {
-        const objects = await this.provider.getObjectsOwnedByAddress(address);
+        const objects = await this.provider.getObjectsOwnedByAddress(address);        
         const coinIds = objects
             .filter(
             (obj: SuiObjectInfo) => {
@@ -283,9 +282,36 @@ export class EnchanterSuiClient {
                 return Coin.isCoin(obj) && (!typeArg ? false: typeArg.includes(`${PACKAGE_ADDRESS}::pool::LPCoin`));
             })
             .map((c) => c.objectId);
-        
-        console.log(coinIds);
-        return await this.provider.getObjectBatch(coinIds);
+
+        const list = await this.provider.getObjectBatch(coinIds);
+        const coinsIds = localStorage.get('coinsIds')
+        const lpList = [];
+        for(const item of list) {
+            try {
+                const { fields, type } = item.details.data
+                const lpAmount = fields.balance
+                const decimals = 9
+                const startStr = `0x2::coin::Coin<${PACKAGE_ADDRESS}::pool::LPCoin<`                
+                const [tokenX, tokenY] = type.slice(startStr.length).slice(0, -2).split(', ')
+                const objectId:any = this._getObjectId(coinsIds, tokenX, tokenY)
+                const LpData:any = await this.provider.getObject(objectId)
+                const supply = LpData.details.data.fields.lp_supply.fields.value                
+                const share = lpAmount / supply
+                const lp = {
+                    pairs: [tokenX, tokenY],
+                    tokenX,
+                    tokenY,
+                    lpAmount,
+                    decimals,
+                    supply,
+                    share
+                };
+                lpList.push(lp);
+            } catch (error) {
+                continue
+            }
+        }
+        return lpList;
     }
 
     async exchange(in_coin: string, out_coin: string, in_amount: number, out_amount: number, impact_rate: number, sender:string, type?:string) {        
@@ -302,14 +328,17 @@ export class EnchanterSuiClient {
 
         let min_out;
         let max_in;
+
+        const dir = lp === 'xy' ? 'swap_x_to_y_' : 'swap_y_to_x_'
+
         if(type === 'exactIn'){
             min_out = this._calculateMinimum(out_amount, impact_rate, type);
             const strArgs = [poolId, coin_numbers, in_amount, min_out]
-            return await this._submit('swap_x_to_y', [in_coin, out_coin], strArgs);
+            return await this._submit(`${dir}exact_in`, [in_coin, out_coin], strArgs);
         }else{
             max_in = this._calculateMinimum(in_amount, impact_rate, type);
             const strArgs = [poolId, coin_numbers, out_amount, max_in]
-            return await this._submit('swap_x_to_y', [in_coin, out_coin], strArgs);
+            return await this._submit(`${dir}exact_out`, [in_coin, out_coin], strArgs);
         }
      }
      
@@ -338,70 +367,70 @@ export class EnchanterSuiClient {
         return event.moveEvent?.fields?.decimals;
     }
 
-    async getTotalLpAmount(coinX: string, coinY: string) {        
-        const allPools = localStorage.get('allPools')
+    async getTotalLpAmount(coinX: string, coinY: string) {
         const coinsIds = localStorage.get('coinsIds')
-        const lp = this._getLpDirection(allPools, coinX, coinY)
         const objectId:any = this._getObjectId(coinsIds, coinX, coinY)
-
         let LpData:any;
-
         try {
             LpData = await this.provider.getObject(objectId)
         } catch (error) {
             return null
         }
         return{
-            // decimals:LpData.data.decimals,
-            // lpAmount:LpData.data.supply.vec[0].integer.vec[0].value
+            decimals:9,
+            lpAmount:LpData.details.data.fields.lp_supply.fields.value
         }
     }
 
 
-    // async getCurrentLPAmount(account: HexString, coinTypeTagIn: string, coinTypeTagOut: string) {        
-    //     const equity = `${POOL_ADDRESS}::lp_coin::LPCoin<${coinTypeTagIn}, ${coinTypeTagOut}>`;
-    //     const coinInfoType = `0x1::coin::CoinInfo<${equity}>`;
-    //     let supply: number;
-    //     let decimals: number = -1;
-    //     try {
-    //         const infoRes: any = await this.getAccountResource(POOL_ADDRESS, coinInfoType);
-    //         supply = parseInt(infoRes.data.supply.vec[0].integer.vec[0].value);
-    //         decimals = parseInt(infoRes.data.decimals);
-    //     } catch(e) {
-    //         return {
-    //             account,
-    //             lpValue: 0.0,
-    //             lpAmount: 0,
-    //             supply: 0,
-    //             decimals,
-    //             share:0
-    //         };
-    //     }
-
-
-    
+    async getCurrentLPAmount(account: string, tokenX: string, tokenY: string) {
+        const coinsIds = localStorage.get('coinsIds')
+        const objectId:any = this._getObjectId(coinsIds, tokenX, tokenY)        
+        let supply: number;        
+        try {
+            let LpData:any = await this.provider.getObject(objectId)            
+            supply = parseInt(LpData.details.data.fields.lp_supply.fields.value);
+        } catch(e) {
+            return {
+                account,
+                lpValue: 0.0,
+                lpAmount: 0,
+                supply: 0,
+                decimals:9,
+                share:0
+            };
+        }
         
+        let lpAmount: number;
+        let decimals:number
+        try {
+            const objects = await this.provider.getObjectsOwnedByAddress(account);        
+            const coinIds = objects
+                .filter(
+                (obj: SuiObjectInfo) => {
+                    const typeArg: any = Coin.getCoinTypeArg(obj);
+                    return Coin.isCoin(obj) && (!typeArg ? false: typeArg.includes(`${PACKAGE_ADDRESS}::pool::LPCoin`));
+                })
+                .map((c) => c.objectId);
     
-    //     // get user LP amount
-    //     const equityType = `0x1::coin::CoinStore<${equity}>`;
-    //     let lpAmount: number;
-    //     try {
-    //         const equityRes: any = await this.getAccountResource(account, equityType);
-    //         lpAmount = parseInt(equityRes.data.coin.value);
-    //     } catch(e) {
-    //         lpAmount = 0;
-    //     }
+            const list = await this.provider.getObjectBatch(coinIds);
+            const item = list.find(i => i.details.data.type.includes(tokenX) && i.details.data.type.includes(tokenY))
+            lpAmount = item.details.data.fields.balance
+            decimals = 9
+        } catch(e) {
+            lpAmount = 0;
+            decimals = 9
+        }
     
-    //     return {
-    //         account,
-    //         lpValue: lpAmount / (10 ** decimals),
-    //         lpAmount,
-    //         supply,
-    //         decimals,
-    //         share: lpAmount / supply
-    //     };
-    // }
-
+        return {
+            account,
+            lpValue: lpAmount / (10 ** decimals),
+            lpAmount,
+            supply,
+            decimals,
+            share: lpAmount / supply
+        };
+    }
 
     
     /**

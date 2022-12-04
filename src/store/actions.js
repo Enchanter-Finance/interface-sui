@@ -161,36 +161,22 @@ export const actions = {
         state.slipage * 1000 || 1000, state.address, 
         exactDir
       )
-      console.log('trn', trn)
-      if(!trn.hash) return errorCb()
+      console.log(trn)
+      if(!(trn?.effects?.status?.status === 'success')) return errorCb()
+      // 成功了
+
       commit(MutationType.SetExchangeConfirmModal, false)
-      commit(MutationType.SetShowSwapResult, {
-        status: true,
-        visible: true,
-      });
-      commit(MutationType.SetShowPromtSwapModal, false);
+      
+      dispatch(ActionTypes.GetTokenBalance, "notResetSelectToken");
+      commit(MutationType.SetSlideInfo, null);
+      commit(MutationType.SetTransaction, trn.effects);
+      commit(MutationType.SetShowTransactionPopUp, true);
+
     } catch (error) {
       console.log(error);
       errorCb();
       return;
     }
-
-    let transaction = await window.SDK.waitForTransactionWithResult(trn.hash)
-    if(transaction && transaction.success){
-      dispatch(ActionTypes.GetTokenBalance, "notResetSelectToken");
-      commit(MutationType.SetSlideInfo, null);
-      commit(MutationType.SetTransaction, transaction);    
-      setTimeout(() => {
-        commit(MutationType.SetShowTransactionPopUp, true);
-      }, 2000);
-    }else{
-      commit(MutationType.SetshowToast, "Transaction Failed");
-      commit(MutationType.SetShowSwapResult, {
-        status: null,
-        visible: false,
-      });
-    }
-    
   },
 
   async [ActionTypes.GetAnotherLpPosition]({ commit, state }) {

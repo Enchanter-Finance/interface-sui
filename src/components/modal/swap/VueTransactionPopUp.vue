@@ -52,6 +52,7 @@ export default {
     let InCoin = 0
     let OutCoin = 0    
     if(events.length){
+      console.log('events', events)
       const { decimals: topDecimals } = selectedTokenTop.value
       const { decimals: botDecimals } = selectedTokenBottom.value
       const data = events.find(_ => _.type.indexOf('SwapEvent') !== -1)

@@ -314,7 +314,7 @@ export class EnchanterSuiClient {
         return lpList;
     }
 
-    async exchange(in_coin: string, out_coin: string, in_amount: number, out_amount: number, impact_rate: number, sender:string, type?:string) {        
+    async exchange(in_coin: string, out_coin: string, in_amount: number, out_amount: number, impact_rate: number, sender:string, type?:string) {
         const allPools = localStorage.get('allPools')
         const coinsIds = localStorage.get('coinsIds')
 
@@ -354,11 +354,18 @@ export class EnchanterSuiClient {
         return await this._submit(typeMethod, [coin_x, coin_y], strArgs);
     }
 
-    // async removeLiquidity(coin_x: string, coin_y: string, equity_amount: number, amount_x: number, amount_y: number, impact_rate: number, sender:string) {
-    //     const min_x = this._calculateMinimum(amount_x, impact_rate);
-    //     const min_y = this._calculateMinimum(amount_y, impact_rate);
-    //     return await this._submit(`${PACKAGE_ADDRESS}::swap::remove_liquidity`, [coin_x, coin_y], [equity_amount, min_x, min_y]);
-    // }
+    async removeLiquidity(coin_x: string, coin_y: string, equity_amount: number, amount_x: number, amount_y: number, impact_rate: number, sender:string) {
+
+        const coinsIds = localStorage.get('coinsIds')
+        const poolId:any = this._getObjectId(coinsIds, coin_x, coin_y)
+
+        const min_x = this._calculateMinimum(amount_x, impact_rate);
+        const min_y = this._calculateMinimum(amount_y, impact_rate);
+
+        const strArgs = [poolId, 'coin_numbers_x', equity_amount, min_x, min_y]
+
+        return await this._submit('remove_liquidity', [coin_x, coin_y], strArgs);
+    }
 
 
     private async _getDecimals(typeArg: string) {
@@ -464,7 +471,7 @@ export class EnchanterSuiClient {
         
         return tokenInfo;
     }
-
+    
     _amountToDecimal(amount: number, decimals: number) {
         return amount / (10 ** decimals);
     }
@@ -497,6 +504,6 @@ export class EnchanterSuiClient {
     }
     _getObjectId(coinsIds:Array<any>, coinX:string, coinY:string): string|undefined{        
         const exactPair = coinsIds.find(lp => lp[0].indexOf(coinX) !== -1 && lp[0].indexOf(coinY) !== -1)        
-        return exactPair[1]
+        return exactPair && exactPair[1] || null
     }
 }

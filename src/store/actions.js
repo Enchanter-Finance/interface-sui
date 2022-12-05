@@ -340,7 +340,7 @@ export const actions = {
     commit(MutationType.SetShowPromtRemoveModal, false);
 
     try {
-      trn = await window.SDK.removeLiquidity(
+      trn = await window.suiSDK.removeLiquidity(
         coinX,
         coinY,
         lpAmount,

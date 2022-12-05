@@ -274,7 +274,7 @@ export class EnchanterSuiClient {
      * @returns 
      */
     async getUserLPList(address: string) {
-        const objects = await this.provider.getObjectsOwnedByAddress(address);        
+        const objects = await this.provider.getObjectsOwnedByAddress(address);                
         const coinIds = objects
             .filter(
             (obj: SuiObjectInfo) => {
@@ -284,6 +284,7 @@ export class EnchanterSuiClient {
             .map((c) => c.objectId);
 
         const list = await this.provider.getObjectBatch(coinIds);
+        
         const coinsIds = localStorage.get('coinsIds')
         const lpList = [];
         for(const item of list) {
@@ -361,12 +362,15 @@ export class EnchanterSuiClient {
 
         const min_x = this._calculateMinimum(amount_x, impact_rate);
         const min_y = this._calculateMinimum(amount_y, impact_rate);
-
-        const strArgs = [poolId, 'coin_numbers_x', equity_amount, min_x, min_y]
+        
+        let typeStr = `${PACKAGE_ADDRESS}::pool::LPCoin<${coin_x}, ${coin_y}>`
+        let coin_numbers_lp:any = await this.getBalnaceGreaterThan(sender, BigInt(equity_amount), typeStr)
+        
+        const strArgs = [poolId, coin_numbers_lp, equity_amount, min_x, min_y]
 
         return await this._submit('remove_liquidity', [coin_x, coin_y], strArgs);
     }
-
+    
 
     private async _getDecimals(typeArg: string) {
         const events = await this.provider.getEvents({ "MoveEvent": `0x2::coin::CurrencyCreated<${typeArg}>` }, null, null)

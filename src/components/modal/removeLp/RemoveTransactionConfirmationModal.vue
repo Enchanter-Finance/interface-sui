@@ -51,14 +51,14 @@ export default {
     let InCoin = 0
     let OutCoin = 0
 
-    const openExplorer = ()=>{      
-      window.open(`https://explorer.aptoslabs.com/txn/${transaction.value.version}?network=testnet`, '_blank');
+    const openExplorer = ()=>{
+      window.open(`https://explorer.sui.io/transaction/${transaction.value.transactionDigest}?network=devnet`, '_blank');
     }
 
-    if(events.length){      
-      const eventsArray = events.filter(_ => _.type.indexOf('DepositEvent') !== -1)
-      InCoin = eventsArray[0].data.amount
-      OutCoin = eventsArray[1].data.amount
+    if(events.length){
+      const data = events.find(_ => _['moveEvent']).moveEvent.fields      
+      InCoin = data?.real_x
+      OutCoin = data?.real_y
       const { decimals :inDecimals } = selectedTokenTop.value
       const { decimals :outDecimals } = selectedTokenBottom.value
       InCoin = toFixed(amountToDecimal(InCoin, inDecimals))

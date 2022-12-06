@@ -20,7 +20,7 @@
         <div class="popup--content">
           <div class="popup--text">Swap Exactly {{formatDecimalsNum(InCoin)}} {{selectedTokenTop.symbol}} for</div>
           <div class="popup--text">{{formatDecimalsNum(OutCoin)}} {{selectedTokenBottom.symbol}}</div>
-          <a class="explorer" :href="`https://explorer.aptoslabs.com/txn/${version}?network=testnet`" target="_blank">View on Explorer</a>
+          <a class="explorer" :href="`https://explorer.sui.io/transaction/${version}?network=devnet`" target="_blank">View on Explorer</a>
         </div>
       </div>
       <div class="popup__fader"></div>
@@ -51,18 +51,17 @@ export default {
     const events = transaction.value.events
     let InCoin = 0
     let OutCoin = 0    
-    if(events.length){
-      console.log('events', events)
+    if(events.length){      
       const { decimals: topDecimals } = selectedTokenTop.value
-      const { decimals: botDecimals } = selectedTokenBottom.value
-      const data = events.find(_ => _.type.indexOf('SwapEvent') !== -1)
-      InCoin = data?.data.in_amount
+      const { decimals: botDecimals } = selectedTokenBottom.value      
+      const data = events.find(_ => _['moveEvent']).moveEvent.fields
+      InCoin = data?.in_amount
       InCoin = toFixed(amountToDecimal(InCoin, topDecimals))
-      OutCoin = data?.data.out_amount
+      OutCoin = data?.out_amount
       OutCoin = toFixed(amountToDecimal(OutCoin, botDecimals))
-      version.value = transaction.value.hash
+      version.value = transaction.value.transactionDigest
     }else{
-      version.value = transaction.value.hash
+      version.value = transaction.value.transactionDigest
     }
 
     onBeforeUnmount(() => {

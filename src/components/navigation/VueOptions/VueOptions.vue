@@ -1,8 +1,12 @@
 <template>
-  <div class="navbar__options flex align--center">    
+  <div class="navbar__options flex align--center">
+    <div v-if="isAuthWallet" class="request__token-btn" :class="{'requestLoading':requestLoading}" @click="handleRequest">
+      <VueIconCIrcle v-if="requestLoading" class="loading-svg"/>
+      <span class="request-txt">Request $SUI</span>
+    </div>
     <div class="options__account--wrapper flex align--center" v-if="isAuthWallet" @click="openAccount">
       <div class="account-balance">
-        {{formatDecimalsNum(aptBalance)}}APT
+        {{formatDecimalsNum(aptBalance)}}SUI
       </div>
       <div class="options__account">
         <img v-if="isAuthWallet === 'aptos'" class="options__account--avatar" src="../../../assets/images/petra_logo.png" alt="">
@@ -44,6 +48,7 @@ export default {
   components: { VueIconDotsHorizontal, VueButton, VueIconCIrcle },
   setup() {
     const moreOpen = ref(false)
+    const requestLoading = ref(false)
     const store = useStore()    
     const isAuthWallet = computed(() => store.state.isAuthWallet)    
     const address = computed(() => store.state.address)
@@ -58,7 +63,18 @@ export default {
     }
     const openAccount = () => {
       store.commit(MutationType.SetAccountModal, true)
-    }    
+    }
+    const handleRequest = () => {      
+      requestLoading.value = true            
+      window.suiSDK.handleRequest(address.value).
+      then(res=>{
+        store.commit(MutationType.SetshowToast, '0.05 SUI sent to your wallet!')
+      }).catch(err=>{
+        store.commit(MutationType.SetshowToast, 'SUI received failed')
+      }).finally(()=>{
+        requestLoading.value = false
+      })
+    }
     const toLink = (link) => {      
       const linkMap = {        
         'About':'https://www.enchanter.fi/',
@@ -69,12 +85,40 @@ export default {
     }
     
 
-    return { address, openConnectModal, isAuthWallet, moreOpen, openAccount, toLink, aptBalance, masacAddr, formatDecimalsNum }
+    return { address, openConnectModal, isAuthWallet, moreOpen, openAccount, toLink, requestLoading, handleRequest, aptBalance, masacAddr, formatDecimalsNum }
   },
 }
 </script>
 
 <style lang="scss">
+.request__token-btn{  
+  padding: 0 18px;
+  height: 48px;
+  line-height: 48px;
+  background: #8B54FF;
+  border-radius: 24px;
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  @media screen and (max-width: 650px) {   
+    display: none;
+  }
+  &.requestLoading{
+    background: #5D34B4;
+    cursor: auto;
+  }
+  .loading-svg{
+    margin-top: 2px;
+  }
+  &:hover{
+    background: #5D34B4;
+  }
+  .request-txt{
+    padding-left: 6px;
+    
+  }
+}
 .options__account--wrapper{
   background: #281C4D;
   border-radius: 24px;  

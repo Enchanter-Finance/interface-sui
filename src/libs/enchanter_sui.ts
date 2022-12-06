@@ -423,10 +423,10 @@ export class EnchanterSuiClient {
                     return Coin.isCoin(obj) && (!typeArg ? false: typeArg.includes(`${PACKAGE_ADDRESS}::pool::LPCoin`));
                 })
                 .map((c) => c.objectId);
-    
-            const list = await this.provider.getObjectBatch(coinIds);
-            const item = list.find(i => i.details.data.type.includes(tokenX) && i.details.data.type.includes(tokenY))
-            lpAmount = item.details.data.fields.balance
+            const list = await this.provider.getObjectBatch(coinIds);            
+            const items = list.filter(i => i.details.data.type.includes(tokenX) && i.details.data.type.includes(tokenY))
+            const total = items.reduce((prev, cur)=> (prev + cur.details.data.fields.balance), 0)
+            lpAmount = total
             decimals = 9
         } catch(e) {
             lpAmount = 0;
@@ -509,5 +509,8 @@ export class EnchanterSuiClient {
     _getObjectId(coinsIds:Array<any>, coinX:string, coinY:string): string|undefined{        
         const exactPair = coinsIds.find(lp => lp[0].indexOf(coinX) !== -1 && lp[0].indexOf(coinY) !== -1)        
         return exactPair && exactPair[1] || null
+    }
+    async handleRequest(account:string){
+        return await this.provider.requestSuiFromFaucet(account);
     }
 }

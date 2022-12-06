@@ -166,7 +166,6 @@ export const actions = {
       // 成功了
 
       commit(MutationType.SetExchangeConfirmModal, false)
-      
       dispatch(ActionTypes.GetTokenBalance, "notResetSelectToken");
       commit(MutationType.SetSlideInfo, null);
       commit(MutationType.SetTransaction, trn.effects);
@@ -265,33 +264,16 @@ export const actions = {
         state.address,
         state.isAddOrCreateLp
       );
-      if (!trn.hash) return errorCb();
+      if(!(trn?.effects?.status?.status === 'success')) return errorCb()
+
       commit(MutationType.SetAddConfirmModal, false);
-      commit(MutationType.SetShowAddResult, {
-        status: true,
-        visible: true,
-      });
-      commit(MutationType.SetShowPromtAddModal, false);
+      dispatch(ActionTypes.GetTokenBalance, "notResetSelectToken");
+      commit(MutationType.SetTransaction, trn.effects);
+      commit(MutationType.SetShowTransactionAddPopUp, true);
     } catch (error) {
       console.log(error);
       errorCb();
       return;
-    }
-
-    let transaction = await window.SDK.waitForTransactionWithResult(trn.hash)
-
-    if(transaction && transaction.success && transaction.events.length){
-      dispatch(ActionTypes.GetTokenBalance, "notResetSelectToken");
-      commit(MutationType.SetTransaction, transaction);
-      setTimeout(() => {
-        commit(MutationType.SetShowTransactionAddPopUp, true);
-      }, 2000);
-    }else{
-      commit(MutationType.SetshowToast, "Transaction Failed");
-      commit(MutationType.SetShowAddResult, {
-        status: null,
-        visible: false,
-      });
     }
     
   },
@@ -349,37 +331,19 @@ export const actions = {
         state.slipage * 1000 || 1000,
         state.address
       );
-      if (!trn.hash) return errorCb();
+      if(!(trn?.effects?.status?.status === 'success')) return errorCb()
+
       commit(MutationType.SetRemoveConfirmModal, false);
-      commit(MutationType.SetShowRemoveResult, {
-        status: true,
-        visible: true,
-      });
-      commit(MutationType.SetShowPromtRemoveModal, false);
+      payload.callback && payload.callback();
+      commit(MutationType.SetTransaction, trn.effects);
+      commit(MutationType.SetShowTransactionRemovePopUp, true);
+      
     } catch (error) {
       console.log(error);
       errorCb();
       return;
     }
-
-    let transaction = await window.SDK.waitForTransactionWithResult(trn.hash)
-    if(transaction && transaction.success && transaction.events.length){
-      commit(MutationType.SetTransaction, transaction);
-      payload.callback && payload.callback();
-      setTimeout(() => {
-        commit(MutationType.SetShowTransactionRemovePopUp, true);
-        commit(MutationType.SetShowRemoveResult, {
-          status: null,
-          visible: false,
-        });
-      }, 2000);
-    }else{
-      commit(MutationType.SetshowToast, "Transaction Failed");
-      commit(MutationType.SetShowRemoveResult, {
-        status: null,
-        visible: false,
-      });
-    }    
+    
   },
   async [ActionTypes.onNetworkChange]({ commit, state }) {
     const wallet = state.isAuthWallet;

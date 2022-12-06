@@ -137,6 +137,7 @@ const getOutInfo = async(coinX, coinY)=>{
 
   const resLpData = await window.suiSDK.getCurrentLPAmount(address.value, coinX, coinY)
   
+  
   maxTxt.value = resLpData.lpValue
   lpData.value = resLpData
   percentage.value = resLpData.share * 100 < 0.01 ? `<${0.01}%` : `${(resLpData.share * 100).toFixed(5)}%`

@@ -51,16 +51,16 @@ export default {
     let InCoin = 0
     let OutCoin = 0
 
-    const openExplorer = ()=>{      
-      window.open(`https://explorer.aptoslabs.com/txn/${transaction.value.hash}?network=testnet`, '_blank');
+    const openExplorer = ()=>{
+      window.open(`https://explorer.sui.io/transaction/${transaction.value.transactionDigest}?network=devnet`, '_blank');
     }
 
     if(events.length){
       const { decimals: topDecimals } = selectedTokenTop.value
       const { decimals: botDecimals } = selectedTokenBottom.value
-      const data = events.find(_ => _.type.indexOf('AddLpEvent') !== -1)
-      InCoin = data.data.real_x
-      OutCoin = data.data.real_y
+      const data = events.find(_ => _['moveEvent']).moveEvent.fields
+      InCoin = data?.real_x
+      OutCoin = data?.real_y
       InCoin = toFixed(amountToDecimal(InCoin, topDecimals))
       OutCoin = toFixed(amountToDecimal(OutCoin, botDecimals))
     }else{

@@ -307,7 +307,14 @@ export class EnchanterSuiClient {
                     supply,
                     share
                 };
-                lpList.push(lp);
+                const idx = lpList.findIndex(i => i.tokenX === lp.tokenX && i.tokenY === lp.tokenY)
+                if(idx !== -1){
+                    lpList[idx].lpAmount = lpList[idx].lpAmount + lp.lpAmount
+                    lpList[idx].share = lpList[idx].lpAmount / supply
+                }else{
+                    lpList.push(lp);
+                }
+                
             } catch (error) {
                 continue
             }

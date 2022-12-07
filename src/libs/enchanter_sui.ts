@@ -3,8 +3,8 @@ import { localStorage } from "../utils/localStorage";
 import { sui_submit, toFixed } from "./sui_wallet";
 import { SwapDirection, TokenInfo } from "./types/types";
 import { groupBy, map } from 'lodash'
-const PACKAGE_ADDRESS = "0x1318d6fb6fb904f4707e97d41428cf00fbfefe0d";
-const POOL_ADDRESS = "0xd9cb31218db2e0ffeccfd57fae1733f55082148f";
+const PACKAGE_ADDRESS = "0xe252d6b08a27b50f5e68b72c6f610c4b870ed89";
+const POOL_ADDRESS = "0x7a899de3d4c30d15ab18dce26fccfd6901032689";
 const COIN_ADDRESS = "0xb123efd724d209eadb24fe1c11b96433be87b944";
 
 export const CELER_COIN_ADDRESS = 'CELER_COIN_ADDRESS';
@@ -140,6 +140,7 @@ export class EnchanterSuiClient {
         const list1 = await this.provider.getObjectBatch(objectIds1)
         const objectIds2 = list1.reduce( (prev:any, c:any) => [...prev, c.details.data.fields.value], []);
         const list2 = await this.provider.getObjectBatch(objectIds2)
+        console.log(list2)
         let coinsArr = list2.map((item:any) => {
             const startStr = `${PACKAGE_ADDRESS}::pool::Pool<`
             return item.details.data.type.slice(startStr.length).slice(0, -1).split(', ')
@@ -358,7 +359,10 @@ export class EnchanterSuiClient {
         let coin_numbers_x:any = await this.getBalnaceGreaterThan(sender, BigInt(amount_x), coin_x)
         let coin_numbers_y:any = await this.getBalnaceGreaterThan(sender, BigInt(amount_y), coin_y)
         const strArgs = [poolId, coin_numbers_x, coin_numbers_y, amount_x, min_x, amount_y, min_y]
-        const typeMethod = type === 'create' ? 'swap::create_pool_and_add_liquidity' : 'add_liquidity';
+        const typeMethod = type === 'create' ? 'create_pool_and_add_liquidity' : 'add_liquidity';
+        if(type === 'create'){
+            strArgs.shift()
+        }
         return await this._submit(typeMethod, [coin_x, coin_y], strArgs);
     }
 

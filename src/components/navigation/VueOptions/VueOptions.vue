@@ -24,20 +24,17 @@
     <div class="sit-btn">      
       <div class="request__token-btn">
         <div class="menu-inner menu-inner1">
-          <vue-aptos></vue-aptos>          
+          <vue-aptos v-if="curNetwork === 'Aptos'"></vue-aptos> 
+          <vue-sui v-else></vue-sui>
           <span class="current-network">{{curNetwork}}</span>
-          <vue-icon-chevron-down class="button__select__chevron" dir="top"></vue-icon-chevron-down>
+          <vue-icon-chevron-down class="button__select__chevron" :class="{'sui':curNetwork === 'Sui'}" dir="top"></vue-icon-chevron-down>
         </div>
         <div class="menu-inner menu-inner2" @click="toggleNetWork">
-          <vue-sui></vue-sui>
+          <vue-sui v-if="curNetwork === 'Sui'"></vue-sui>
           <span class="current-network">{{curNetwork === 'Aptos' ? 'Sui' : 'Aptos'}}</span>        
         </div>
       </div>
     </div>
-
-
-
-
 
     <div class="options__menu" @click="moreOpen = true" @mouseenter="moreOpen = true" >
       <svg width="24" height="4" viewBox="0 0 24 4" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -74,7 +71,7 @@ export default {
     const requestLoading = ref(false)
     const store = useStore()    
     const curNetwork = ref('')
-    curNetwork.value = location.href.indexOf('sui') !== -1 ? 'Sui' : 'Aptos'
+    curNetwork.value = location.href.indexOf('sui') !== -1 ? 'Aptos' : 'Sui'
     const isAuthWallet = computed(() => store.state.isAuthWallet)    
     const address = computed(() => store.state.address)
      const toggleNetWork = ()=>{      
@@ -118,6 +115,9 @@ export default {
 </script>
 
 <style lang="scss">
+.button__select__chevron.sui{
+  margin-left: 20px;
+}
 .sit-btn{
   width: 155px;  
   height: 48px;
@@ -169,11 +169,13 @@ export default {
       }
     }
     .menu-inner1{
+      
       .button__select__chevron {
         transform: rotate(180deg);
+        
       }
     }
-
+  
   }
 }
 .options__account--wrapper{

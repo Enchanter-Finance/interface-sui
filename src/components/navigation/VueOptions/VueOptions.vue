@@ -76,7 +76,7 @@ export default {
     const isAuthWallet = computed(() => store.state.isAuthWallet)    
     const address = computed(() => store.state.address)
      const toggleNetWork = ()=>{      
-      window.open( curNetwork === 'Aptos' ? 'https://sui.enchanter.fi/' : 'https://app.enchanter.fi/', '_blank');      
+      window.open( curNetwork.value === 'Aptos' ? 'https://sui.enchanter.fi/' : 'https://app.enchanter.fi/', '_blank');      
     }
     const aptBalance = computed(() => store.state.aptBalance)    
 

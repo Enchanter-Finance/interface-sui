@@ -72,7 +72,7 @@ export default {
     const requestLoading = ref(false)
     const store = useStore()    
     const curNetwork = ref('')
-    curNetwork.value = location.href.indexOf('sui') !== -1 ? 'Aptos' : 'Sui'
+    curNetwork.value = location.href.indexOf('sui') !== -1 ? 'Sui' : 'Aptos'
     const isAuthWallet = computed(() => store.state.isAuthWallet)    
     const address = computed(() => store.state.address)
      const toggleNetWork = ()=>{      

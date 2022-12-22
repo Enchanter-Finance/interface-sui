@@ -30,7 +30,7 @@
           <vue-icon-chevron-down class="button__select__chevron" :class="{'sui':curNetwork === 'Sui'}" dir="top"></vue-icon-chevron-down>
         </div>
         <div class="menu-inner menu-inner2" @click="toggleNetWork">
-          <vue-sui v-if="curNetwork === 'Sui'"></vue-sui>
+          <vue-sui v-if="curNetwork === 'Aptos'"></vue-sui>
           <vue-aptos v-else></vue-aptos>
           <span class="current-network">{{curNetwork === 'Aptos' ? 'Sui' : 'Aptos'}}</span>        
         </div>

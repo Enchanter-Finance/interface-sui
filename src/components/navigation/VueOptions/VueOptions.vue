@@ -31,6 +31,7 @@
         </div>
         <div class="menu-inner menu-inner2" @click="toggleNetWork">
           <vue-sui v-if="curNetwork === 'Sui'"></vue-sui>
+          <vue-aptos v-else></vue-aptos>
           <span class="current-network">{{curNetwork === 'Aptos' ? 'Sui' : 'Aptos'}}</span>        
         </div>
       </div>

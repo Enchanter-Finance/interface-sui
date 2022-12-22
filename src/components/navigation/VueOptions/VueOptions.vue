@@ -1,9 +1,9 @@
 <template>
-  <div class="navbar__options flex align--center">
-    <div v-if="isAuthWallet" class="request__token-btn" :class="{'requestLoading':requestLoading}" @click="handleRequest">
+  <div class="navbar__options flex align--start">
+    <!-- <div class="request__token-btn" :class="{'requestLoading':requestLoading}" @click="handleRequest">
       <VueIconCIrcle v-if="requestLoading" class="loading-svg"/>
       <span class="request-txt">Request $SUI</span>
-    </div>
+    </div> -->
     <div class="options__account--wrapper flex align--center" v-if="isAuthWallet" @click="openAccount">
       <div class="account-balance">
         {{formatDecimalsNum(aptBalance)}}SUI
@@ -19,6 +19,26 @@
     
 
     <div @click="openConnectModal" class="options__connect" v-else>Connect Wallet</div>
+
+
+    <div class="sit-btn">      
+      <div class="request__token-btn">
+        <div class="menu-inner menu-inner1">
+          <vue-aptos></vue-aptos>          
+          <span class="current-network">{{curNetwork}}</span>
+          <vue-icon-chevron-down class="button__select__chevron" dir="top"></vue-icon-chevron-down>
+        </div>
+        <div class="menu-inner menu-inner2" @click="toggleNetWork">
+          <vue-sui></vue-sui>
+          <span class="current-network">{{curNetwork === 'Aptos' ? 'Sui' : 'Aptos'}}</span>        
+        </div>
+      </div>
+    </div>
+
+
+
+
+
     <div class="options__menu" @click="moreOpen = true" @mouseenter="moreOpen = true" >
       <svg width="24" height="4" viewBox="0 0 24 4" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="2" cy="1.99951" r="2" fill="white"/>
@@ -40,19 +60,26 @@ import { computed,  ref } from "vue"
 import VueButton from "@/components/button/VueButton.vue"
 import VueIconCIrcle from "@/components/icons/VueIconCIrcle.vue"
 import VueIconDotsHorizontal from "@/components/icons/VueIconDotsHorizontal.vue"
+import VueIconChevronDown from "@/components/icons/VueIconChevronDown.vue"
+import VueAptos from "@/components/icons/VueAptos.vue"
+import VueSui from "@/components/icons/VueSui.vue"
 import { useStore } from 'vuex'
 import { masacAddress, formatDecimalsNum } from '@/utils/index'
 import { MutationType } from "@/store/mutations"
 export default {
   name: "NavOptions",
-  components: { VueIconDotsHorizontal, VueButton, VueIconCIrcle },
+  components: { VueIconDotsHorizontal, VueButton, VueIconCIrcle, VueIconChevronDown, VueAptos, VueSui },
   setup() {
     const moreOpen = ref(false)
     const requestLoading = ref(false)
     const store = useStore()    
+    const curNetwork = ref('')
+    curNetwork.value = location.href.indexOf('sui') !== -1 ? 'Sui' : 'Aptos'
     const isAuthWallet = computed(() => store.state.isAuthWallet)    
     const address = computed(() => store.state.address)
-    
+     const toggleNetWork = ()=>{      
+      window.open( curNetwork === 'Aptos' ? 'https://sui.enchanter.fi/' : 'https://app.enchanter.fi/', '_blank');      
+    }
     const aptBalance = computed(() => store.state.aptBalance)    
 
     const masacAddr = computed(() => masacAddress(store.state.address))
@@ -85,23 +112,43 @@ export default {
     }
     
 
-    return { address, openConnectModal, isAuthWallet, moreOpen, openAccount, toLink, requestLoading, handleRequest, aptBalance, masacAddr, formatDecimalsNum }
+    return { toggleNetWork, curNetwork, address, openConnectModal, isAuthWallet, moreOpen, openAccount, toLink, requestLoading, handleRequest, aptBalance, masacAddr, formatDecimalsNum }
   },
 }
 </script>
 
 <style lang="scss">
-.request__token-btn{  
-  padding: 0 18px;
+.sit-btn{
+  width: 155px;  
   height: 48px;
-  line-height: 48px;
-  background: #8B54FF;
+  position: relative;
   border-radius: 24px;
   margin-right: 16px;
-  display: flex;
-  align-items: center;
+  margin-left: 16px;
+  box-sizing: border-box;
+  @media screen and (max-width: 650px) {
+    display: none;
+  }
+}
+.request__token-btn{  
+  box-sizing: border-box;
+  width: 155px;
+  line-height: 48px;
+  background: #8B54FF;
+  border-radius: 24px;  
   cursor: pointer;
-  @media screen and (max-width: 650px) {   
+  background: #281C4D;
+  position: absolute;
+  left: 0;
+  top: 0;
+  
+  .menu-inner{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0 16px;
+  }
+  .menu-inner2{
     display: none;
   }
   &.requestLoading{
@@ -112,11 +159,21 @@ export default {
     margin-top: 2px;
   }
   &:hover{
-    background: #5D34B4;
-  }
-  .request-txt{
-    padding-left: 6px;
-    
+    border-radius: 28px;
+    .menu-inner2{
+      display: flex;
+      align-items: center;
+      &:hover{
+       background: linear-gradient(0deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1)), #3C2970;
+       border-radius: 0 0 28px 28px;
+      }
+    }
+    .menu-inner1{
+      .button__select__chevron {
+        transform: rotate(180deg);
+      }
+    }
+
   }
 }
 .options__account--wrapper{
@@ -155,7 +212,6 @@ export default {
     box-sizing: border-box;
     border: 2px solid #3C2970;
     &:hover{
-      // background: #5D34B4;
       border: 2px solid #8B54FF;
     }
     &--avatar{
@@ -163,7 +219,6 @@ export default {
       margin-right: 3px;
       width: 30px;
       height: 30px;
-      /* border-radius:50%; */
     }
   }
   &__menu{
@@ -173,8 +228,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #3C2970;
-    margin-left: 16px;
+    background: #3C2970;    
     cursor: pointer;
     position: relative;    
   }
@@ -224,4 +278,12 @@ export default {
     }
   }
 }
+
+
+.current-network{
+  padding: 0 12px 0 8px;
+  font-weight: 500;
+  font-size: 18px;
+}
+
 </style>

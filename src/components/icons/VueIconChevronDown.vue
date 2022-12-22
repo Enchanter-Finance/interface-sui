@@ -1,35 +1,23 @@
 <template>
-  <svg width="12" height="7" viewBox="0 0 12 7" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0.97168 1L6.20532 6L11.439 1" :class="themeClass"></path>
+  <svg class="icon" width="24" height="12" viewBox="0 0 24 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M11.9999 8.65685L19.071 1.58579L20.4852 3L12.707 10.7782C12.3165 11.1687 11.6833 11.1687 11.2928 10.7782L3.51465 3L4.92886 1.58579L11.9999 8.65685Z" fill="white" fill-opacity="0.5"/>
   </svg>
 </template>
 
 <script>
-import { computed } from "vue"
 export default {
   name: "VueIconChevronDown",
-  props: {
-    theme: {
-      type: String,
-      default: "light",
-      validator: (value) => ["light", "dark"].includes(value),
-    },
-  },
   setup(props) {
-    const themeClass = computed(() => (props.theme === "light" ? "icon--light" : "icon--dark"))
-    return { themeClass }
+    
   },
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .icon {
-  &--light {
-    stroke: #fff;
-  }
-
-  &--dark {
-    stroke: #000;
-  }
+  margin-top: 2px;      
+  transform: none;
+  transition: transform 0.2s linear 0s;
+  
 }
 </style>
